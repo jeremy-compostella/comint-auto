@@ -1,0 +1,25 @@
+This Emacs module provides automation features for =comint= buffers, primarily aimed at simplifying interactions with SSH and other command-line interfaces that require user input. It automates username entry, password retrieval from auth-source, and SSH fingerprint acceptance.
+* Usage
+The main entry point is the =comint-auto-mode= minor mode. When enabled, it hooks into =comint= buffers to automatically handle certain prompts.
+
+To enable =comint-auto-mode= globally, add the following to your Emacs configuration:
+
+#+begin_src emacs-lisp
+(comint-auto-mode 1)
+#+end_src
+
+Alternatively, you can toggle it using =M-x comint-auto-mode=.
+* Features
+- *Automatic Username Completion:* When a =comint= buffer prompts for a username (e.g., "Username for host:"), this module attempts to find the username in =auth-source=. If found, it automatically sends the username to the buffer. If not found, it prompts the user to enter a username and stores the username and host in the variable =comint-auto-latest-user-and-host=.
+
+- *Password Retrieval:* When a =comint= buffer prompts for a password, this module searches =auth-source= for a matching entry based on the username and hostname. If a matching entry is found, the password is automatically retrieved and used. This works for prompts like "Password for user@host" or "user for host". It also takes into account the last provided username and hostname if a password is asked for within 1 second.
+
+- *Automatic SSH Fingerprint Acceptance:* When connecting to an SSH server for the first time, the module automatically accepts the SSH key fingerprint if =comint-auto-accept-ssh-fingerprints= is non-nil (the default).
+* Customization
+- =comint-auto-accept-ssh-fingerprints= (default: =t=): A boolean variable that controls whether SSH fingerprints are automatically accepted. If set to =nil=, the user will be prompted to accept the fingerprint manually.
+- =comint-auto-user-and-host-regexp= (default: ="[a-zA-Z0-9_\.-]+"=) This variable holds the regular expression used to match usernames and hostnames in prompts. You can customize this if your usernames or hostnames contain characters not matched by the default.
+* Variables
+- =comint-auto-latest-user-and-host=: This variable stores the most recently used username and hostname, along with a timestamp. It is used to automatically provide the username for password prompts that appear shortly after a username prompt.
+- =comint-auto-username-filter=: A =comint-output-filter-functions= hook that handles username prompts.
+- =comint-auto-ssh-fingerprint-filter=: A =comint-output-filter-functions= hook that automatically accepts SSH fingerprints.
+- =comint-auto-password-finder=: The function assigned to =comint-password-function= when =comint-auto-mode= is enabled, which retrieves passwords from =auth-source=.
